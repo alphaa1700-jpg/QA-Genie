@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const execution = await prisma.execution.create({
       data: {
         status: status.toUpperCase(), // PASS, FAIL, etc.
-        notes: notes || "Executed via CI/CD Automation",
+        comments: notes || "Executed via CI/CD Automation",
         testCaseId: testCase.id,
         cycleId: cycle.id
       }
@@ -65,14 +65,22 @@ export async function POST(request: Request) {
 
     // 5. If it failed, optionally create a defect
     if (status.toUpperCase() === 'FAIL') {
-      await prisma.defect.create({
+      const defect = await prisma.defect.create({
         data: {
+          defectId: `DEF-${Math.floor(Math.random() * 10000)}`,
           title: `[Auto-Defect] ${testCase.title} Failed`,
           description: `Automated test run failed. Notes: ${notes}`,
           status: "OPEN",
           severity: "HIGH",
-          executionId: execution.id,
           projectId: testCase.projectId
+        }
+      });
+
+      // Link defect to execution
+      await prisma.defectExecution.create({
+        data: {
+          defectId: defect.id,
+          executionId: execution.id
         }
       });
     }
