@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
+import NewProjectModal from "./NewProjectModal";
 
 const prisma = new PrismaClient();
 
@@ -20,12 +21,12 @@ export default async function ProjectsPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2">
-          <Plus size={18} />
-          New Project
-        </button>
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
+          <p className="text-gray-500 text-sm mt-1">Manage all testing projects and their high-level metrics.</p>
+        </div>
+        <NewProjectModal />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">

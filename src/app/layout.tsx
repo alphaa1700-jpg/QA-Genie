@@ -7,6 +7,8 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "QA-Genie",
   description: "Test Management Platform",
+  manifest: "/manifest.json",
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({
