@@ -28,7 +28,7 @@ export default function RepositoryClientView({ projects }: { projects: any[] }) 
                   <div 
                     key={module.id} 
                     onClick={() => setSelectedModule(module)}
-                    className={\`flex items-center gap-2 p-1.5 hover:bg-gray-100 rounded text-sm cursor-pointer \${selectedModule?.id === module.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}\`}
+                    className={`flex items-center gap-2 p-1.5 hover:bg-gray-100 rounded text-sm cursor-pointer ${selectedModule?.id === module.id ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700'}`}
                   >
                     <Folder size={14} className={selectedModule?.id === module.id ? "text-blue-600" : "text-blue-400"} />
                     {module.name}
