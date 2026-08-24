@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     });
 
     if (!testCase) {
-      return NextResponse.json({ error: \`TestCase \${testCaseId} not found\` }, { status: 404 });
+      return NextResponse.json({ error: `TestCase ${testCaseId} not found` }, { status: 404 });
     }
 
     // 3. Find or Create an "Automated Runs" Cycle for this Project
@@ -67,8 +67,8 @@ export async function POST(request: Request) {
     if (status.toUpperCase() === 'FAIL') {
       await prisma.defect.create({
         data: {
-          title: \`[Auto-Defect] \${testCase.title} Failed\`,
-          description: \`Automated test run failed. Notes: \${notes}\`,
+          title: `[Auto-Defect] ${testCase.title} Failed`,
+          description: `Automated test run failed. Notes: ${notes}`,
           status: "OPEN",
           severity: "HIGH",
           executionId: execution.id,
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ 
       success: true, 
-      message: \`Execution recorded for \${testCaseId}\`,
+      message: `Execution recorded for ${testCaseId}`,
       executionId: execution.id
     });
 
