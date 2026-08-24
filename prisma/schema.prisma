@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password      String // Hashed password
+  geminiApiKey  String?
+  role          String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  projects  Project[] @relation("ProjectOwner")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String?
+  status      String   @default("ACTIVE")
+  ownerId     String
+  owner       User     @relation("ProjectOwner", fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  modules     Module[]
+  scenarios   Scenario[]
+  testCases   TestCase[]
+  suites      Suite[]
+  sprints     Sprint[]
+  cycles      Cycle[]
+  defects     Defect[]
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("ACTIVE")
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  createdAt   DateTime @default(now())
+  
+  scenarios   Scenario[]
+  testCases   TestCase[]
+}
+
+model Scenario {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  moduleId      String?
+  module        Module?  @relation(fields: [moduleId], references: [id])
+  priority      String   @default("MEDIUM")
+  status        String   @default("ACTIVE")
+  preconditions String?
+  tags          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  testCases     TestCase[]
+}
+
+model TestCase {
+  id            String   @id @default(cuid())
+  caseId        String   @unique // like TC-001
+  title         String
+  description   String?
+  scenarioId    String?
+  scenario      Scenario? @relation(fields: [scenarioId], references: [id])
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  moduleId      String?
+  module        Module?  @relation(fields: [moduleId], references: [id])
+  priority      String   @default("MEDIUM")
+  testType      String   @default("MANUAL")
+  status        String   @default("DRAFT")
+  preconditions String?
+  testData      String?
+  automation    String   @default("NOT_AUTOMATED")
+  tags          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  steps         TestCaseStep[]
+  executions    Execution[]
+  suites        SuiteCase[]
+}
+
+model TestCaseStep {
+  id            String   @id @default(cuid())
+  testCaseId    String
+  testCase      TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+  stepNumber    Int
+  action        String
+  expectedResult String?
+  testData      String?
+}
+
+model Suite {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  status      String   @default("ACTIVE")
+  createdAt   DateTime @default(now())
+
+  cases       SuiteCase[]
+  cycles      Cycle[]
+}
+
+model SuiteCase {
+  id          String   @id @default(cuid())
+  suiteId     String
+  suite       Suite    @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  testCaseId  String
+  testCase    TestCase @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+}
+
+model Sprint {
+  id          String   @id @default(cuid())
+  name        String
+  goal        String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String   @default("PLANNED")
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  
+  cycles      Cycle[]
+  executions  Execution[]
+}
+
+model Cycle {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  sprintId    String?
+  sprint      Sprint?  @relation(fields: [sprintId], references: [id])
+  suiteId     String?
+  suite       Suite?   @relation(fields: [suiteId], references: [id])
+  startDate   DateTime?
+  endDate     DateTime?
+  environment String?
+  status      String   @default("PLANNED")
+
+  executions  Execution[]
+}
+
+model Execution {
+  id          String   @id @default(cuid())
+  testCaseId  String
+  testCase    TestCase @relation(fields: [testCaseId], references: [id])
+  cycleId     String
+  cycle       Cycle    @relation(fields: [cycleId], references: [id])
+  sprintId    String?
+  sprint      Sprint?  @relation(fields: [sprintId], references: [id])
+  environment String?
+  executedBy  String?
+  executionDate DateTime @default(now())
+  status      String   @default("NOT_RUN")
+  actualResult String?
+  comments    String?
+  
+  defects     DefectExecution[]
+}
+
+model Defect {
+  id              String   @id @default(cuid())
+  defectId        String   @unique // like DEF-001
+  title           String
+  description     String?
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id])
+  severity        String   @default("MEDIUM")
+  priority        String   @default("MEDIUM")
+  status          String   @default("OPEN")
+  environment     String?
+  stepsToReproduce String?
+  expectedResult  String?
+  actualResult    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  executions      DefectExecution[]
+}
+
+model DefectExecution {
+  id          String   @id @default(cuid())
+  defectId    String
+  defect      Defect   @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  executionId String
+  execution   Execution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+}
