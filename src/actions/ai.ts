@@ -3,11 +3,12 @@
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
 export async function generateTestCaseAI(title: string, projectId: string, moduleId: string) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
     throw new Error("Unauthorized");
